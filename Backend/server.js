@@ -3,19 +3,40 @@ import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
 
-dotenv.config();
+dotenv.config({ quiet: true });
 
 const app = express();
 const PORT = process.env.PORT || 5000;
+const allowedOrigins = [
+  "http://localhost:5173",
+  "http://127.0.0.1:5173",
+  ...(process.env.FRONTEND_URL
+    ? process.env.FRONTEND_URL.split(",").map((origin) => origin.trim()).filter(Boolean)
+    : []),
+];
 
 // Middleware
-app.use(cors());
-app.use(express.json());
+app.use(
+  cors({
+    origin(origin, callback) {
+      if (!origin || allowedOrigins.includes(origin)) {
+        return callback(null, true);
+      }
+
+      return callback(new Error(`CORS blocked for origin: ${origin}`));
+    },
+  })
+);
+app.use(express.json({ limit: "1mb" }));
 
 // Initialize Groq client
 const groq = new Groq({
   apiKey: process.env.GROQ_API_KEY,
 });
+
+if (!process.env.GROQ_API_KEY) {
+  console.warn("GROQ_API_KEY is not set. /api/diet and /api/test-groq will fail.");
+}
 
 // Function to clean markdown formatting
 function cleanMarkdown(text) {
@@ -38,6 +59,10 @@ app.post("/api/diet", async (req, res) => {
 
     if (!preferences) {
       return res.status(400).json({ error: "Preferences are required" });
+    }
+
+    if (!process.env.GROQ_API_KEY) {
+      return res.status(500).json({ error: "GROQ_API_KEY is not configured" });
     }
 
     console.log("Received request:", { preferences, restrictions, goal });
@@ -103,6 +128,13 @@ app.get("/api/health", (req, res) => {
 // Test Groq connection
 app.get("/api/test-groq", async (req, res) => {
   try {
+    if (!process.env.GROQ_API_KEY) {
+      return res.status(500).json({
+        success: false,
+        error: "GROQ_API_KEY is not configured",
+      });
+    }
+
     console.log("Testing Groq API connection...");
     
     const test = await groq.chat.completions.create({
