@@ -1,4 +1,4 @@
-# 🥗 NutriPlan AI - Premium AI-Powered Diet Planner
+# 🥗 NutriPlan AI - an AI-Powered Diet Planner
 
 <div align="center">
 
@@ -22,7 +22,7 @@
 - **Instant Results** - Get comprehensive diet plans in seconds
 - **Download Plans** - Export your diet plan as a text file
 
-### 🎨 Premium UI/UX
+### 🎨 UI/UX
 - **Modern Glass-morphism Design** - Sleek, contemporary interface
 - **Smooth Animations** - Polished micro-interactions throughout
 - **Fully Responsive** - Perfect experience on desktop, tablet, and mobile
